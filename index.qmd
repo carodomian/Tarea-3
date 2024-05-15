@@ -1,0 +1,118 @@
+---
+title: "Tarea 3: Visualización de datos en forma de tablas sobre insuficiencia cardíaca"
+author: "Carolina Domian y Gabriela Rodríguez"
+date: "2024-05-16"
+format: html
+toc: true
+editor: visual
+lang: es
+theme: minty
+---
+
+## Introducción
+
+A continuación se presenta un documento Quarto con bloques de código en R que utilizan funciones de Tidyverse para consultar un conjunto de datos y presentar los resultados en forma de tablas.
+
+El conjunto de datos utilizados consiste en 299 registros de pacientes que sufrieron insuficiencia cardíaca. Se tomaron en cuenta 13 variables clínicas para cada paciente (sexo, edad, anemia, diabetes, fumador/a, presión arterial alta, etc).
+
+Los datos fueron extraídos del artículo [*Machine learning can predict survival of patients with heart failure from serum creatinine and ejection fraction alone*](https://bmcmedinformdecismak.biomedcentral.com/articles/10.1186/s12911-020-1023-5) elaborado por David Chicco y Giuseppe Jurman en el 2020.
+
+## Carga de paquetes
+
+```{r}
+library(tidyverse)
+library(knitr)
+```
+
+## Carga de datos
+
+```{r}
+#| label: "lectura_datos"
+
+insuficiencia_cardiaca <- read.csv(file = "heart_failure_clinical_records_dataset.csv")
+
+
+```
+
+## Consulta 1
+
+Tabla que muestra las mujeres mayores de 75 años, en orden descendente de edad, las columnas correspondientes a:
+
+-   Sexo
+
+-   Edad
+
+-   Diabetes
+
+-   Presión arterial alta
+
+-   Creatinina sérica
+
+```{r}
+#| label: "consulta_01"
+
+
+insuficiencia_cardiaca |>
+  select(sex, age, diabetes, high_blood_pressure, serum_creatinine)|>
+  filter(sex == "0", age >= 75)|>
+  arrange(desc(age))|>
+  kable()
+
+```
+
+## Consulta 2
+
+Tabla que muestra todos los hombres diabéticos o fumadores, en orden ascendente de edad, las columnas correspondientes a:
+
+-   Sexo
+
+-   Edad
+
+-   Diabetes
+
+-   Fumador
+
+-   Fracción de eyección
+
+```{r}
+#| label: "consulta_02"
+
+
+insuficiencia_cardiaca |>
+  select(sex, age, diabetes, smoking, ejection_fraction)|>
+  filter(sex == "1", 
+         diabetes == "1" & smoking == "1")|>
+  arrange(age)|>
+  kable()
+  
+```
+
+## Consulta 3
+
+Tabla que muestra el promedio de fracción de eyección de los pacientes diabéticos y de los pacientes no diabéticos.
+
+```{r}
+#| label: consulta_3
+
+insuficiencia_cardiaca |> 
+  select(diabetes, ejection_fraction) |>
+  group_by(diabetes)|>
+  summarise(promedio_ejeccion = mean(ejection_fraction))|>
+  kable()
+
+```
+
+## Consulta 4
+
+Tabla que muestra la menor edad de los hombres fallecidos.
+
+```{r}
+#| label: "consulta_4"
+
+insuficiencia_cardiaca |>
+  filter(sex == "1", age <= 45, DEATH_EVENT == "1") |>
+  group_by(age, sex, DEATH_EVENT) |>
+  summarise(Fallecidos = n(), .groups = "drop") |>
+  kable()
+
+```
